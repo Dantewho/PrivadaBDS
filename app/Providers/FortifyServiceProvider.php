@@ -11,6 +11,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
+use App\Models\User;
+use Laravel\Fortify\Contracts\LoginResponse;
 use Laravel\Fortify\Actions\RedirectIfTwoFactorAuthenticatable;
 use Laravel\Fortify\Fortify;
 
@@ -21,7 +24,12 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(LoginResponse::class, fn () => new class implements LoginResponse {
+            public function toResponse($request)
+            {
+                return redirect()->intended($request->user()->esAdministrador() ? route('admin.dashboard') : route('residentes.inicio'));
+            }
+        });
     }
 
     /**
@@ -29,11 +37,17 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Fortify::authenticateUsing(function (Request $request) {
+            $user = User::where('email', Str::lower($request->input('email')))->first();
+            return $user && $user->estaActivo() && Hash::check($request->input('password', ''), $user->password) ? $user : null;
+        });
         Fortify::createUsersUsing(CreateNewUser::class);
         Fortify::updateUserProfileInformationUsing(UpdateUserProfileInformation::class);
         Fortify::updateUserPasswordsUsing(UpdateUserPassword::class);
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
         Fortify::redirectUserForTwoFactorAuthenticationUsing(RedirectIfTwoFactorAuthenticatable::class);
+        Fortify::requestPasswordResetLinkView(fn () => view('login.recuperar'));
+        Fortify::resetPasswordView(fn (Request $request) => view('login.restablecer', ['request' => $request]));
 
         RateLimiter::for('login', function (Request $request) {
             $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username())).'|'.$request->ip());

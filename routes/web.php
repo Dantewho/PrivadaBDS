@@ -1,7 +1,114 @@
 <?php
 
+use App\Http\Controllers\Auth\GoogleAuthController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\AccesoController;
+use App\Http\Controllers\AdeudoController;
+use App\Http\Controllers\AnuncioController;
+use App\Http\Controllers\ApelacionController;
+use App\Http\Controllers\InvitacionController;
+use App\Http\Controllers\HistorialController;
+use App\Http\Controllers\MensajeApelacionController;
+use App\Http\Controllers\MensajeQuejaController;
+use App\Http\Controllers\MultaController;
+use App\Http\Controllers\MotivoMultaController;
+use App\Http\Controllers\NotificacionController;
+use App\Http\Controllers\PasswordRecoveryController;
+use App\Http\Controllers\ReglamentoController;
+use App\Http\Controllers\PagoController;
+use App\Http\Controllers\QuejaController;
+use App\Http\Controllers\TarjetaController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\ViviendaController;
 use Illuminate\Support\Facades\Route;
+use Laravel\Socialite\Socialite;
 
-Route::get('/', function () {
-    return view('welcome');
+Route::view('/', 'login.login')->name('home');
+Route::view('/login', 'login.login')->name('login');
+Route::post('/solicitar-restablecimiento', [PasswordRecoveryController::class, 'sendResetLink'])->middleware('guest')->name('password.email.custom');
+Route::get('/auth/google', [GoogleAuthController::class, 'redirect'])->name('auth.google');
+Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->name('auth.google.callback');
+Route::get('/invitacion/{token}', [InvitacionController::class, 'show'])->name('invitacion.show');
+Route::post('/invitacion/{token}', [InvitacionController::class, 'accept'])->name('invitacion.accept');
+
+Route::middleware(['auth', 'active'])->group(function () {
+    Route::middleware('role:residente')->group(function () {
+        Route::get('/residente', [DashboardController::class, 'resident'])->name('residentes.inicio');
+        Route::get('/residente/mi-vivienda', [DashboardController::class, 'home'])->name('residentes.vivienda');
+        Route::get('/residente/perfil', [DashboardController::class, 'profile'])->name('residentes.perfil');
+        Route::patch('/residente/perfil/password', [UserController::class, 'updateOwnPassword'])->name('residentes.perfil.password');
+        Route::get('/residente/facturas', [DashboardController::class, 'invoices'])->name('residentes.facturas');
+        Route::get('/residente/notificaciones', [NotificacionController::class, 'index'])->name('residentes.notificaciones');
+        Route::get('/residente/notificaciones/{notificacion}', [NotificacionController::class, 'show'])->name('residentes.notificaciones.show');
+        Route::patch('/residente/notificaciones/{notificacion}/leida', [NotificacionController::class, 'markRead'])->name('residentes.notificaciones.leida');
+        Route::get('/residente/reglamento', [ReglamentoController::class, 'resident'])->name('residentes.reglamento');
+        Route::get('/residente/reglamento/pdf', [ReglamentoController::class, 'pdf'])->name('residentes.reglamento.pdf');
+        Route::get('/residente/tarjetas', [TarjetaController::class, 'residentIndex'])->name('residentes.tarjetas');
+        Route::post('/residente/tarjetas', [TarjetaController::class, 'requestCard'])->name('residentes.tarjetas.solicitar');
+        Route::delete('/residente/tarjetas/{tarjeta}', [TarjetaController::class, 'cancelRequest'])->name('residentes.tarjetas.cancelar');
+        Route::get('/residente/accesos', [AccesoController::class, 'residentIndex'])->name('residentes.accesos');
+        Route::get('/residente/adeudos', [AdeudoController::class, 'residentIndex'])->name('residentes.adeudos');
+        Route::post('/residente/adeudos/{adeudo}/pago', [AdeudoController::class, 'reportPayment'])->name('residentes.adeudos.pago');
+        Route::get('/residente/multas', [MultaController::class, 'residentIndex'])->name('residentes.multas');
+        Route::post('/residente/multas/{multa}/apelaciones', [ApelacionController::class, 'store'])->name('residentes.multas.apelar');
+        Route::get('/residente/apelaciones', [ApelacionController::class, 'residentIndex'])->name('residentes.apelaciones');
+        Route::post('/residente/apelaciones/{apelacion}/mensajes', [ApelacionController::class, 'residentMessage'])->name('residentes.apelaciones.mensaje');
+        Route::get('/residente/quejas', [QuejaController::class, 'residentIndex'])->name('residentes.quejas');
+        Route::post('/residente/quejas', [QuejaController::class, 'store'])->name('residentes.quejas.store');
+        Route::post('/residente/quejas/{queja}/mensajes', [MensajeQuejaController::class, 'store'])->name('residentes.quejas.mensaje');
+        Route::get('/multas/{multa}/evidencia', [MultaController::class, 'downloadEvidence'])->name('multas.evidencia');
+        Route::get('/apelaciones/mensajes/{mensajeApelacion}/adjunto', [ApelacionController::class, 'download'])->name('apelaciones.adjunto');
+    });
+    Route::post('/logout', function (\Illuminate\Http\Request $request) {
+        \Illuminate\Support\Facades\Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        return redirect()->route('login');
+    })->name('logout');
+});
+
+Route::prefix('administrador')->name('admin.')->middleware(['auth', 'active', 'role:administrador'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'admin'])->name('dashboard');
+    Route::get('/viviendas', [ViviendaController::class, 'index'])->name('viviendas');
+    Route::post('/viviendas', [ViviendaController::class, 'store'])->name('viviendas.store');
+    Route::patch('/viviendas/{vivienda}', [ViviendaController::class, 'update'])->name('viviendas.update');
+    Route::get('/usuarios', [UserController::class, 'index'])->name('usuarios');
+    Route::patch('/usuarios/{user}', [UserController::class, 'update'])->name('usuarios.update');
+    Route::post('/usuarios/{user}/password', [UserController::class, 'resetPassword'])->name('usuarios.password.reset');
+    Route::patch('/usuarios/{user}/estado', [UserController::class, 'toggleStatus'])->name('usuarios.estado');
+    Route::get('/historial', [HistorialController::class, 'index'])->name('historial');
+    Route::get('/historial/{vivienda}/pdf', [HistorialController::class, 'pdf'])->name('historial.pdf');
+    Route::post('/usuarios/invitaciones', [InvitacionController::class, 'store'])->name('usuarios.invitar');
+    Route::post('/usuarios/invitaciones/{invitacion}/reenviar', [InvitacionController::class, 'resend'])->name('usuarios.invitaciones.reenviar');
+    Route::get('/tarjetas', [TarjetaController::class, 'index'])->name('tarjetas');
+    Route::post('/tarjetas', [TarjetaController::class, 'store'])->name('tarjetas.store');
+    Route::patch('/tarjetas/{tarjeta}', [TarjetaController::class, 'update'])->name('tarjetas.update');
+    Route::get('/accesos', [AccesoController::class, 'index'])->name('accesos');
+    Route::post('/accesos', [AccesoController::class, 'store'])->name('accesos.store');
+    Route::get('/adeudos', [AdeudoController::class, 'index'])->name('adeudos');
+    Route::post('/adeudos', [AdeudoController::class, 'store'])->name('adeudos.store');
+    Route::post('/pagos/{pago}/confirmar', [AdeudoController::class, 'confirmPayment'])->name('pagos.confirmar');
+    Route::get('/multas', [MultaController::class, 'index'])->name('multas');
+    Route::post('/multas', [MultaController::class, 'store'])->name('multas.store');
+    Route::patch('/multas/{multa}', [MultaController::class, 'update'])->name('multas.update');
+    Route::get('/apelaciones', [ApelacionController::class, 'index'])->name('apelaciones');
+    Route::patch('/apelaciones/{apelacion}', [ApelacionController::class, 'update'])->name('apelaciones.update');
+    Route::post('/apelaciones/{apelacion}/mensajes', [ApelacionController::class, 'message'])->name('apelaciones.mensaje');
+    Route::get('/quejas', [QuejaController::class, 'index'])->name('quejas');
+    Route::patch('/quejas/{queja}', [QuejaController::class, 'update'])->name('quejas.update');
+    Route::post('/quejas/{queja}/mensajes', [MensajeQuejaController::class, 'store'])->name('quejas.mensaje');
+    Route::patch('/mensajes-queja/{mensajeQueja}/moderacion', [MensajeQuejaController::class, 'moderate'])->name('quejas.mensajes.moderar');
+    Route::get('/anuncios', [AnuncioController::class, 'index'])->name('anuncios');
+    Route::post('/anuncios', [AnuncioController::class, 'store'])->name('anuncios.store');
+    Route::patch('/anuncios/{anuncio}', [AnuncioController::class, 'update'])->name('anuncios.update');
+    Route::delete('/anuncios/{anuncio}', [AnuncioController::class, 'destroy'])->name('anuncios.destroy');
+    Route::post('/anuncios/{anuncio}/whatsapp', [AnuncioController::class, 'retryWhatsapp'])->name('anuncios.whatsapp');
+    Route::view('/documentos', 'administrador.documentos')->name('documentos');
+    Route::get('/reglamento', [MotivoMultaController::class, 'reglamento'])->name('reglamento');
+    Route::get('/reglamento/pdf', [ReglamentoController::class, 'pdf'])->name('reglamento.pdf');
+    Route::post('/reglamento/motivos', [MotivoMultaController::class, 'store'])->name('reglamento.motivos.store');
+    Route::patch('/reglamento/motivos/{motivoMulta}', [MotivoMultaController::class, 'update'])->name('reglamento.motivos.update');
+    Route::patch('/reglamento/motivos/{motivoMulta}/estado', [MotivoMultaController::class, 'toggle'])->name('reglamento.motivos.estado');
+    Route::delete('/reglamento/motivos/{motivoMulta}', [MotivoMultaController::class, 'destroy'])->name('reglamento.motivos.destroy');
+    Route::view('/configuracion', 'administrador.configuracion')->name('configuracion');
 });

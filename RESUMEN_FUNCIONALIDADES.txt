@@ -1,0 +1,219 @@
+﻿RESUMEN DE FUNCIONALIDADES DE PRIVADABDS
+========================================
+
+Descripción organizada por las vistas Blade del proyecto. “Funcional” indica que la vista está conectada a rutas y acciones del sistema. “Prototipo” indica que muestra diseño o datos de ejemplo, pero sus controles no guardan cambios reales.
+
+
+1. ACCESO, CUENTAS E INVITACIONES
+---------------------------------
+
+resources/views/login/login.blade.php — Inicio de sesión (funcional)
+- Permite iniciar sesión con correo y contraseña.
+- Incluye acceso con Google.
+- El panel al que se dirige al usuario depende de su rol y permisos.
+- Tiene opción para mostrar u ocultar la contraseña.
+- Enlaza a la recuperación de contraseña.
+
+resources/views/login/recuperar.blade.php — Recuperar contraseña (funcional)
+- Solicita el correo de la cuenta.
+- Envía un enlace seguro por correo para confirmar el cambio.
+- Informa si se envió el enlace, si hay que esperar por límite de solicitudes o si falló el envío de correo.
+
+resources/views/login/restablecer.blade.php — Crear contraseña nueva (funcional)
+- Recibe el enlace temporal del correo.
+- Solicita el correo y la nueva contraseña dos veces.
+- Al validar el enlace, actualiza la contraseña y devuelve al usuario al inicio de sesión.
+
+resources/views/invitacion/aceptar.blade.php — Aceptar invitación (funcional)
+- Permite completar el nombre y definir una contraseña para una invitación vigente.
+- Al aceptar, se crea y activa la cuenta relacionada con la vivienda y el rol de la invitación.
+
+resources/views/emails/invitacion.blade.php — Correo de invitación
+- Plantilla del correo que invita a una persona a activar su cuenta.
+
+resources/views/emails/contrasena-restablecida.blade.php — Aviso de restablecimiento administrativo
+- Plantilla del correo que comunica que un administrador cambió la contraseña y proporciona una contraseña provisional aleatoria.
+
+
+2. VISTAS DEL RESIDENTE
+-----------------------
+
+resources/views/residentes/inicio.blade.php — Inicio del residente (funcional)
+- Resume adeudos, próximo vencimiento, multas pendientes y tarjetas activas.
+- Muestra actividad reciente de pagos, multas, quejas, accesos y notificaciones.
+- Presenta información básica de la vivienda y los anuncios vigentes.
+- Enlaza a los apartados más utilizados.
+
+resources/views/residentes/mi_vivienda.blade.php — Mi vivienda (funcional)
+- Muestra el estado de la vivienda, residentes registrados y quién es propietario.
+- Resume las tarjetas, adeudos y multas vinculadas a la casa.
+
+resources/views/residentes/pagos_y_adeudos.blade.php — Pagos y adeudos (funcional)
+- Lista cargos, periodos, vencimientos y estados.
+- Permite reportar un pago indicando método y referencia.
+- Muestra si el pago está en revisión, fue rechazado o quedó confirmado por administración.
+
+resources/views/residentes/facturas.blade.php — Facturas (funcional)
+- Lista folio, fecha, concepto e importe de las facturas emitidas.
+- Permite abrir el archivo de comprobante cuando hay uno asociado.
+
+resources/views/residentes/tarjetas_de_acceso.blade.php — Tarjetas de acceso (funcional)
+- Permite solicitar una tarjeta peatonal ($250) o vehicular ($500).
+- La solicitud crea un adeudo y queda pendiente hasta que se revise el pago y se entregue la tarjeta.
+- Permite cancelar una solicitud propia mientras siga pendiente y todavía no se haya reportado o procesado el pago; también retira el adeudo asociado.
+- Muestra el estado y el enlace a los pagos de cada tarjeta.
+
+resources/views/residentes/accesos.blade.php — Historial de accesos (funcional)
+- Lista movimientos registrados con las tarjetas de la vivienda: fecha, puerta, movimiento y tarjeta.
+
+resources/views/residentes/multas.blade.php — Multas (funcional)
+- Muestra motivo, monto, reincidencia, estado y evidencia de cada multa.
+- Permite presentar una apelación en multas pendientes, explicar el motivo y adjuntar evidencia.
+- Permite reportar el pago de una multa pendiente.
+- Enlaza a la conversación y resolución de una apelación existente.
+
+resources/views/residentes/apelaciones.blade.php — Apelaciones (funcional)
+- Muestra las conversaciones con administración y el estado de cada apelación.
+- Permite responder y adjuntar imágenes o documentos mientras el caso siga abierto.
+- Presenta la resolución final y el monto acordado, cuando corresponde.
+
+resources/views/residentes/quejas.blade.php — Quejas (funcional)
+- Permite crear una queja, describirla y, opcionalmente, señalar otra vivienda.
+- Muestra el estado del caso y la conversación con administración.
+- Permite enviar mensajes mientras la queja siga abierta o en proceso.
+- Señala los mensajes que administración haya marcado como ofensivos.
+
+resources/views/residentes/notificaciones.blade.php — Bandeja de notificaciones (funcional)
+- Lista notificaciones disponibles dentro de su periodo de vigencia.
+- Permite marcar avisos como leídos y abrir el contenido completo.
+
+resources/views/residentes/notificacion.blade.php — Detalle de notificación (funcional)
+- Presenta el texto completo de un aviso.
+- Al abrir un aviso de administración, registra su lectura.
+
+resources/views/residentes/reglamento.blade.php — Reglamento (funcional)
+- Permite consultar el PDF vigente y descargarlo.
+
+resources/views/residentes/perfil.blade.php — Perfil (funcional)
+- Muestra datos de la cuenta, vivienda, estado y resumen financiero.
+- Permite cambiar la contraseña. Las cuentas de Google pueden crear una contraseña para iniciar sesión también con correo; las demás confirman primero su contraseña actual.
+- Incluye acceso a notificaciones y cierre de sesión.
+
+resources/views/residentes/layout.blade.php — Marco del portal residente
+- Contiene navegación lateral, encabezado y acceso al perfil.
+- Muestra indicadores de multas pendientes y notificaciones sin leer.
+
+
+3. VISTAS DEL ADMINISTRADOR
+---------------------------
+
+resources/views/administrador/dashboard.blade.php — Dashboard (funcional)
+- Resume viviendas, usuarios activos, tarjetas, adeudos, multas, apelaciones, quejas y anuncios.
+- Muestra actividad reciente, tareas rápidas y asuntos que requieren atención.
+
+resources/views/administrador/viviendas.blade.php — Viviendas (funcional)
+- Permite buscar y filtrar viviendas, consultar ocupación, propietario, tarjetas y multas.
+- Tiene paginación y permite registrar o editar viviendas.
+- La capacidad de usuarios por vivienda se valida en las operaciones del sistema.
+
+resources/views/administrador/usuarios.blade.php — Usuarios e invitaciones (funcional)
+- Permite buscar y filtrar por vivienda, rol y estado; incluye paginación y limpiar filtros.
+- Permite enviar invitaciones, ver las pendientes y reenviar el correo.
+- Permite editar nombre, correo, rol, estado, vivienda y designación como propietario.
+- Permite activar o desactivar una cuenta.
+- Desde Editar permite restablecer la contraseña; se genera una contraseña provisional de 8 dígitos y se envía al usuario por correo.
+
+resources/views/administrador/tarjetas.blade.php — Administración de tarjetas (funcional)
+- Busca y filtra por residente, vivienda, tipo y estado.
+- Permite registrar tarjetas, asignarlas y actualizar el UID y estado.
+- El sistema impide activar una tarjeta mientras el adeudo no esté pagado.
+
+resources/views/administrador/accesos.blade.php — Historial de accesos (funcional)
+- Muestra movimientos con fecha, vivienda, tarjeta, puerta y residente.
+- Permite buscar y filtrar por fecha, puerta y entrada/salida.
+- Permite capturar manualmente un movimiento.
+
+resources/views/administrador/adeudos.blade.php — Adeudos y pagos (funcional)
+- Permite generar cargos y filtrar adeudos por vivienda, concepto, periodo y estado.
+- Muestra pagos reportados para revisión.
+- Permite confirmar un pago; al confirmarlo se actualizan los adeudos y, si aplica, el estado de la tarjeta o multa relacionada.
+
+resources/views/administrador/multas.blade.php — Multas (funcional)
+- Permite buscar y filtrar multas por vivienda, motivo y estado.
+- Permite registrar multas con motivos configurados, evidencia y monto calculado con reincidencia.
+- Permite marcar una multa pagada y consultar su evidencia.
+
+resources/views/administrador/apelaciones.blade.php — Revisión de apelaciones (funcional)
+- Permite filtrar y revisar apelaciones, razones y evidencia.
+- Incluye conversación con el residente y envío de respuestas o adjuntos.
+- Permite mantener el caso en revisión, aceptar o rechazar la apelación y registrar un monto acordado.
+- Una apelación aceptada puede reducir el adeudo o dejarlo en cero.
+
+resources/views/administrador/quejas.blade.php — Administración de quejas (funcional)
+- Permite buscar, filtrar y abrir conversaciones.
+- Permite responder y cambiar el estado del caso.
+- Permite marcar o desmarcar un mensaje como ofensivo; la marca aparece en el historial de la conversación.
+
+resources/views/administrador/anuncios.blade.php — Anuncios y notificaciones (funcional)
+- Permite crear, editar, publicar y eliminar anuncios.
+- Al publicar, crea notificaciones en las bandejas de residentes activos.
+- Permite definir fecha inicial y final de visibilidad.
+- Muestra destinatarios, cantidad de lecturas y quién leyó cada anuncio, con vivienda y fecha.
+- Puede intentar enviar el anuncio a WhatsApp y reintentar el envío si el webhook está configurado.
+
+resources/views/administrador/reglamento.blade.php — Reglamento y motivos de multa (funcional)
+- Muestra el PDF vigente para consulta y descarga.
+- Permite agregar, editar, activar/desactivar y eliminar motivos de multa, además de configurar monto base e incremento por reincidencia.
+- Los motivos con multas históricas se conservan para no perder la referencia de esos registros.
+
+resources/views/administrador/historial.blade.php — Historial por vivienda (funcional)
+- Resume antecedentes: multas por tipo, quejas realizadas y recibidas, pagos atrasados y mensajes reportados.
+- Permite generar y descargar la hoja de evidencias en PDF por vivienda.
+
+resources/views/administrador/configuracion.blade.php — Configuración (prototipo visual)
+- Muestra controles ilustrativos de precios, reincidencia, notificaciones y límites.
+- El formulario usa controles de demostración y actualmente no persiste esos parámetros.
+
+resources/views/administrador/documentos.blade.php — Documentos / Extras (prototipo visual)
+- Muestra un catálogo y solicitudes de documentos con datos de ejemplo.
+- La ruta actual presenta una vista estática; administrar el catálogo y tramitar solicitudes aún no está conectado a esta pantalla.
+
+resources/views/administrador/anuncioncios.blade.php — Vista duplicada/no enlazada
+- Archivo con nombre duplicado o typo. Las rutas del sistema utilizan anuncios.blade.php.
+
+
+4. DISEÑOS COMPARTIDOS, MODALES Y ARCHIVOS AUXILIARES
+----------------------------------------------------
+
+resources/views/loyauts/main.blade.php — Marco administrativo
+- Contiene menú lateral, barra superior, navegación a módulos y acceso/cierre de sesión.
+
+resources/views/vendor/pagination/admin.blade.php — Paginación
+- Presenta los controles de paginación usados por las tablas administrativas.
+
+resources/views/administrador/modales/ — Formularios y ventanas auxiliares
+- vivienda.blade.php: alta de vivienda.
+- usuario.blade.php: crear invitación.
+- tarjeta.blade.php: registrar tarjeta y generar el adeudo relacionado.
+- adeudo.blade.php: generar adeudos.
+- multa.blade.php: registrar multa y evidencia.
+- anuncio.blade.php y anuncio-editar.blade.php: crear y editar anuncios.
+- detalle-vivienda.blade.php y detalle-usuario.blade.php: paneles de detalle.
+- apelacion.blade.php, queja.blade.php, reglamento.blade.php, documento.blade.php y solicitud-documento.blade.php: algunos conservan elementos de demostración y no deben interpretarse como acciones conectadas si no están enlazados desde una vista funcional.
+
+resources/views/administrador/pdf/historial.blade.php — Plantilla de PDF
+- Estructura la hoja de evidencias descargada desde Historial.
+
+resources/views/reglamento/ReglamentoInterno_BahiaSantiago2025conAnexo.pdf — Documento oficial
+- PDF consultado desde las vistas de reglamento.
+
+resources/views/residentes/perfil.php — Archivo auxiliar/no Blade
+- No es la vista que utiliza la ruta del perfil; la vista conectada es perfil.blade.php.
+
+
+5. ALCANCE ACTUAL
+-----------------
+- Los módulos de acceso, viviendas, usuarios, invitaciones, pagos, multas, apelaciones, quejas, anuncios y reglamento tienen operaciones conectadas a rutas y controladores.
+- Las pantallas de Configuración y Documentos/Extras aún son prototipos; sus botones o datos de ejemplo no representan operaciones persistidas.
+- El portal residente todavía no tiene una vista funcional de Extras para solicitar documentos.
+- El envío de correo requiere que el servidor SMTP de .env esté vigente. El envío a WhatsApp requiere un webhook y destino configurados.

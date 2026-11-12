@@ -2,6 +2,19 @@
 
 return [
 
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URI')
+    ],
+
+    'whatsapp' => [
+        'webhook_url' => env('WHATSAPP_WEBHOOK_URL'),
+        'group_id' => env('WHATSAPP_GROUP_ID'),
+    ],
+
+
+
     /*
     |--------------------------------------------------------------------------
     | Third Party Services
